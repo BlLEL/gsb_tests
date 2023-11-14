@@ -90,23 +90,18 @@ class PdoGsb
      *
      * @return l'id, le nom et le prénom sous la forme d'un tableau associatif
      */
-    public function getInfosVisiteur($login, $mdp): array
+    public function getInfosVisiteur($login)
     {
         $requetePrepare = $this->connexion->prepare(
             'SELECT visiteur.id AS id, visiteur.nom AS nom, '
-            . 'visiteur.prenom AS prenom '
+            . 'visiteur.prenom AS prenom, visiteur.email as email '
             . 'FROM visiteur '
-            . 'WHERE visiteur.login = :unLogin AND visiteur.mdp = :unMdp'
+            . 'WHERE visiteur.login = :unLogin'
         );
         $requetePrepare->bindParam(':unLogin', $login, PDO::PARAM_STR);
-        $requetePrepare->bindParam(':unMdp', $mdp, PDO::PARAM_STR);
         $requetePrepare->execute();
-        $response = $requetePrepare->fetch();
-        if(is_array($response)){
-            return $response;
-        }else{
-            return array();
-        }
+        return $requetePrepare->fetch();
+        
     }
 
     /**
@@ -483,4 +478,55 @@ class PdoGsb
         $requetePrepare->bindParam(':unMois', $mois, PDO::PARAM_STR);
         $requetePrepare->execute();
     }
+    
+    public function EstComptable($idVisiteur) :bool{
+        $boolReturn = false;
+        $requetePrepare = $this->connexion->prepare(
+            'SELECT visiteur.iscomptable FROM visiteur '
+            . 'WHERE visiteur.id = :unIdVisiteur '
+        );
+        $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
+        $requetePrepare->execute();
+        if ($requetePrepare->fetch()) {
+            $boolReturn = true;
+        }
+        return $boolReturn;
+    }
+    
+    public function getMdpVisiteur($login) {
+    $requetePrepare = $this->connexion->prepare(
+        'SELECT mdp '
+        . 'FROM visiteur '
+        . 'WHERE visiteur.login = :unLogin'
+    );
+    $requetePrepare->bindParam(':unLogin', $login, PDO::PARAM_STR);
+    $requetePrepare->execute();
+    return $requetePrepare->fetch(PDO::FETCH_OBJ)->mdp;
+
+    }
+
+    public function setCodeA2f($id, $code) {
+    $requetePrepare = $this->connexion->prepare(
+        'UPDATE visiteur '
+      . 'SET codea2f = :unCode '
+      . 'WHERE visiteur.id = :unIdVisiteur '
+    );
+    $requetePrepare->bindParam(':unCode', $code, PDO::PARAM_STR);
+    $requetePrepare->bindParam(':unIdVisiteur', $id, PDO::PARAM_STR);
+    $requetePrepare->execute();
+    }
+
+    public function getCodeVisiteur($id) {
+    $requetePrepare = $this->connexion->prepare(
+        'SELECT visiteur.codea2f AS codea2f '
+      . 'FROM visiteur '
+      . 'WHERE visiteur.id = :unId'
+    );
+    $requetePrepare->bindParam(':unId', $id, PDO::PARAM_STR);
+    $requetePrepare->execute();
+    return $requetePrepare->fetch()['codea2f'];
+    }
+
 }
+
+  
